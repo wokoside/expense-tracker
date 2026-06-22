@@ -1,4 +1,4 @@
-package db;
+package migration;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.stream.Collectors;
 
-public class Migration {
-    private static final String PATH = "migrations/";
+public class MigrationRunner {
+    private static final String MIGRATION_PATH = "migrations/";
 
     public static void run(Connection connection) {
         Throwable originalE = null;
@@ -39,7 +39,7 @@ public class Migration {
     }
 
     private static void initMigration(Connection connection, String sqlName) throws SQLException {
-        InputStream is = Migration.class.getClassLoader().getResourceAsStream(PATH + sqlName);
+        InputStream is = MigrationRunner.class.getClassLoader().getResourceAsStream(MIGRATION_PATH + sqlName);
         if (is == null) throw new IllegalStateException("Migration file not found: " + sqlName);
         try (is; BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)); Statement statement = connection.createStatement()) {
             String sql = br.lines().collect(Collectors.joining("\n"));
