@@ -1,53 +1,104 @@
 package migration;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.stream.Collectors;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
-public class MigrationRunner {
-    private static final String MIGRATION_PATH = "migrations/";
+public final class MigrationRunner {
+
+    private static final Path MIGRATION_PATH = Path.of("resources", "migrations");
+
+    private MigrationRunner() {
+    }
 
     public static void run(Connection connection) {
-        Throwable originalE = null;
-        boolean autoCommit = true;
+        Objects.requireNonNull(connection, "connection must not be null");
+        List<Path> migrationFiles = findMigrationFiles();
+        boolean previousAutoCommit = getAutoCommit(connection);
+        Exception failure = null;
         try {
-            autoCommit = connection.getAutoCommit();
             connection.setAutoCommit(false);
-            initMigration(connection, "categories.sql");
-            initMigration(connection, "expenses.sql");
+            for (Path migrationFile : migrationFiles) {
+                executeMigration(connection, migrationFile);
+            }
             connection.commit();
         } catch (Exception e) {
-            originalE = e;
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                originalE.addSuppressed(ex);
-            }
-            throw new RuntimeException("Failed migration", originalE);
+            failure = e;
+            rollback(connection, e);
+            throw new MigrationException("Failed to execute migrations", e);
         } finally {
-            try {
-                connection.setAutoCommit(autoCommit);
-            } catch (SQLException e) {
-                if (originalE != null) {
-                    originalE.addSuppressed(e);
-                }
+            restoreAutoCommit(connection, previousAutoCommit, failure);
+        }
+    }
+
+    private static List<Path> findMigrationFiles() {
+        if (!Files.isDirectory(MIGRATION_PATH)) {
+            throw new MigrationException("Migration directory not found: " + MIGRATION_PATH.toAbsolutePath());
+        }
+        try (Stream<Path> files = Files.list(MIGRATION_PATH)) {
+            return files
+                    .filter(Files::isRegularFile)
+                    .filter(MigrationRunner::isSqlFile)
+                    .sorted(Comparator.comparing(
+                            path -> path.getFileName().toString()
+                    ))
+                    .toList();
+        } catch (IOException e) {
+            throw new MigrationException("Failed to read migration directory: " + MIGRATION_PATH.toAbsolutePath(), e);
+        }
+    }
+
+    private static boolean isSqlFile(Path path) {
+        return path.getFileName()
+                .toString()
+                .toLowerCase()
+                .endsWith(".sql");
+    }
+
+    private static void executeMigration(Connection connection, Path migrationFile) throws IOException, SQLException {
+        String sql = Files.readString(migrationFile, StandardCharsets.UTF_8);
+        if (sql.isBlank()) {
+            return;
+        }
+        System.out.println("Executing migration: " + migrationFile.getFileName());
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sql);
+        }
+    }
+
+    private static boolean getAutoCommit(Connection connection) {
+        try {
+            return connection.getAutoCommit();
+        } catch (SQLException e) {
+            throw new MigrationException("Failed to read connection state", e);
+        }
+    }
+
+    private static void rollback(Connection connection, Exception originalException) {
+        try {
+            connection.rollback();
+        } catch (SQLException rollbackException) {
+            originalException.addSuppressed(rollbackException);
+        }
+    }
+
+    private static void restoreAutoCommit(Connection connection, boolean previousAutoCommit, Exception originalException) {
+        try {
+            connection.setAutoCommit(previousAutoCommit);
+        } catch (SQLException restoreException) {
+            if (originalException != null) {
+                originalException.addSuppressed(restoreException);
+            } else {
+                throw new MigrationException("Failed to restore connection state", restoreException);
             }
         }
     }
-
-    private static void initMigration(Connection connection, String sqlName) throws SQLException {
-        InputStream is = MigrationRunner.class.getClassLoader().getResourceAsStream(MIGRATION_PATH + sqlName);
-        if (is == null) throw new IllegalStateException("Migration file not found: " + sqlName);
-        try (is; BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)); Statement statement = connection.createStatement()) {
-            String sql = br.lines().collect(Collectors.joining("\n"));
-            statement.execute(sql);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read migration file: " + sqlName, e);
-        }
-    }
-
 }
-
