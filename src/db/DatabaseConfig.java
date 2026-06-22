@@ -12,7 +12,7 @@ final class DatabaseConfig {
     private final String username;
     private final String password;
 
-    private DatabaseConfig (String url, String username, String password) {
+    private DatabaseConfig(String url, String username, String password) {
         this.url = url;
         this.username = username;
         this.password = password;
@@ -23,11 +23,11 @@ final class DatabaseConfig {
 
         try (InputStream input = DatabaseConfig.class.getClassLoader().getResourceAsStream(RESOURCE_NAME)) {
             if (input == null) {
-                throw new DatabaseException ("Resource not found: " + RESOURCE_NAME);
+                throw new DatabaseException("Resource not found: " + RESOURCE_NAME);
             }
             properties.load(input);
         } catch (IOException e) {
-            throw new DatabaseException ("Failed to read " + RESOURCE_NAME, e);
+            throw new DatabaseException("Failed to read " + RESOURCE_NAME, e);
         }
         return new DatabaseConfig(
                 getRequired(properties, "db.url"),
@@ -48,10 +48,10 @@ final class DatabaseConfig {
         return password;
     }
 
-    private static String getRequired (Properties properties, String key) {
+    private static String getRequired(Properties properties, String key) {
         String value = properties.getProperty(key);
         if (value == null || value.isBlank()) {
-            throw new DatabaseException ("Required property is missing or blank: " + key);
+            throw new DatabaseException("Required property is missing or blank: " + key);
         }
         return value.trim();
     }

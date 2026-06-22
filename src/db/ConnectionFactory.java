@@ -10,7 +10,7 @@ public final class ConnectionFactory {
     private ConnectionFactory() {
     }
 
-    public static Connection getConnection() {
+    public static Connection openConnection() {
         try {
             Connection connection = DriverManager.getConnection(CFG.getUrl(), CFG.getUsername(), CFG.getPassword());
             return connection;
