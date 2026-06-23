@@ -24,7 +24,7 @@ class JdbcCategoryDao implements CategoryRepository {
                 insert into categories (name)
                 values (?)
                 """;
-        try (Connection connection = ConnectionFactory.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = ConnectionFactory.openConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, name);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -38,7 +38,7 @@ class JdbcCategoryDao implements CategoryRepository {
                 select 1 from categories
                 where name = ?
                 """;
-        try (Connection connection = ConnectionFactory.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = ConnectionFactory.openConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, name);
             ResultSet rs = ps.executeQuery();
             return rs.next();
