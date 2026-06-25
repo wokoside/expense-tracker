@@ -9,13 +9,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 class JdbcCategoryDao implements CategoryRepository {
-    private static final JdbcCategoryDao INSTANCE = new JdbcCategoryDao();
+    private static volatile JdbcCategoryDao instance;
 
     private JdbcCategoryDao() {
     }
 
     static JdbcCategoryDao getInstance() {
-        return INSTANCE;
+        if (instance == null) {
+            synchronized (JdbcCategoryDao.class) {
+                if (instance == null) {
+                    instance = new JdbcCategoryDao();
+                }
+            }
+        }
+        return instance;
     }
 
     @Override
