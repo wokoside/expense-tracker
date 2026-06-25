@@ -3,7 +3,7 @@ create table if not exists expenses (
 	amount numeric(12,2) not null,
 	description text,
 	category_id int references categories(id) not null,
-	expense_date date not null default now()
+	expense_date date not null default now(),
 
 	constraint chk_expenses_amount
 	 check (amount > 0)
