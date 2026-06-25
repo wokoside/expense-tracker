@@ -10,11 +10,11 @@ class CategoryService {
         this.categoryDao = categoryDao;
     }
 
-    static CategoryService getInstance() {
+    static CategoryService getInstance(CategoryRepository categoryDao) {
         if (instance == null) {
             synchronized (CategoryService.class) {
                 if (instance == null) {
-                    instance = new CategoryService(JdbcCategoryDao.getInstance());
+                    instance = new CategoryService(categoryDao);
                 }
             }
         }
@@ -27,8 +27,9 @@ class CategoryService {
     }
 
     String validateName(String name) {
+        if (name == null) throw new InputException("Введена пустая строка");
         String trimName = name.trim();
-        if (name.isBlank() || name == null) throw new InputException("Введена пустая строка");
+        if (trimName.isBlank()) throw new InputException("Введена пустая строка");
         if (trimName.length() > 100) throw new InputException("Превышен лимит символов (>100)");
         if (categoryDao.existsCategory(trimName)) throw new InputException("Введено неуникальное имя категории");
         return trimName;

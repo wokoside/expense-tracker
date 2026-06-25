@@ -26,14 +26,20 @@ class JdbcCategoryDao implements CategoryRepository {
     }
 
     @Override
-    public void create(String name) {
+    public Category create(String name) {
         String sql = """
                 insert into categories (name)
                 values (?)
+                returning id
                 """;
         try (Connection connection = ConnectionFactory.openConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, name);
-            ps.executeUpdate();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Category(rs.getInt("id"), name);
+                }
+                throw new DatabaseException("Не удалось создать категорию");
+            }
         } catch (SQLException e) {
             throw new DatabaseException(e);
         }
@@ -47,17 +53,12 @@ class JdbcCategoryDao implements CategoryRepository {
                 """;
         try (Connection connection = ConnectionFactory.openConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, name);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
         } catch (SQLException e) {
             throw new DatabaseException(e);
         }
     }
 
-    Category mapCategoryRow(ResultSet rs) throws SQLException {
-        return new Category(
-                rs.getInt("id"),
-                rs.getString("name"));
-
-    }
 }

@@ -1,6 +1,6 @@
 package category;
 
 interface CategoryRepository {
-    void create(String name);
+    Category create(String name);
     boolean existsCategory(String name);
 }

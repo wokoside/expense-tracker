@@ -2,8 +2,6 @@ package category;
 
 import reader.InputReader;
 
-import java.io.InputStream;
-
 class CategoryView {
     private static volatile CategoryView instance;
     private final InputReader inputReader;
@@ -12,11 +10,11 @@ class CategoryView {
         this.inputReader = inputReader;
     }
 
-    static CategoryView getInstance(InputReader inputReader) {
+    static CategoryView getInstance() {
         if (instance == null) {
             synchronized (CategoryView.class) {
                 if (instance == null) {
-                    instance = new CategoryView(inputReader);
+                    instance = new CategoryView(InputReader.getInstance());
                 }
             }
         }

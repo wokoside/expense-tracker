@@ -4,9 +4,23 @@ import reader.InputException;
 import reader.InputReader;
 
 public class CategoryController {
-    private final InputReader inputReader = new InputReader(System.in);
-    private final CategoryView categoryView = CategoryView.getInstance(inputReader);
-    private final CategoryService categoryService = CategoryService.getInstance();
+    private static volatile CategoryController instance;
+    private final CategoryView categoryView = CategoryView.getInstance();
+    private final CategoryService categoryService = CategoryService.getInstance(JdbcCategoryDao.getInstance());
+
+    private CategoryController() {
+    }
+
+    public static CategoryController getInstance() {
+        if (instance == null) {
+            synchronized (CategoryController.class) {
+                if (instance == null) {
+                    instance = new CategoryController();
+                }
+            }
+        }
+        return instance;
+    }
 
     public void addCategory() {
         while (true) {
@@ -18,7 +32,7 @@ public class CategoryController {
                 String choice = categoryView.readLine();
                 if (!choice.equals("1")) return;
             } catch (InputException e) {
-                categoryView.showMessage(e.getMessage());
+                categoryView.showMessage(e.getMessage() + ". Попробуйте еще раз.");
             }
         }
     }
