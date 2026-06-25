@@ -3,13 +3,20 @@ package category;
 import reader.InputReader;
 
 class CategoryView {
-    private static final CategoryView INSTANCE = new CategoryView();
+    private static volatile CategoryView instance;
 
     private CategoryView() {
     }
 
     static CategoryView getInstance() {
-        return INSTANCE;
+        if (instance == null) {
+            synchronized (CategoryView.class) {
+                if (instance == null) {
+                    instance = new CategoryView();
+                }
+            }
+        }
+        return instance;
     }
 
     String readLine(String message) {

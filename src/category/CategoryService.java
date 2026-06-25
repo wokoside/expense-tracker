@@ -4,14 +4,21 @@ import reader.InputException;
 
 class CategoryService {
     private final CategoryRepository categoryDao;
-    private static final CategoryService INSTANCE = new CategoryService(JdbcCategoryDao.getInstance());
+    private static volatile CategoryService instance;
 
-    CategoryService(CategoryRepository categoryDao) {
+    private CategoryService(CategoryRepository categoryDao) {
         this.categoryDao = categoryDao;
     }
 
     static CategoryService getInstance() {
-        return INSTANCE;
+        if (instance == null) {
+            synchronized (CategoryService.class) {
+                if (instance == null) {
+                    instance = new CategoryService(JdbcCategoryDao.getInstance());
+                }
+            }
+        }
+        return instance;
     }
 
     void addCategory(String name) {
