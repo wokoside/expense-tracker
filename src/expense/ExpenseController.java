@@ -1,8 +1,11 @@
 package expense;
 
+import category.CategoryController;
 import reader.InputException;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public class ExpenseController {
 
@@ -128,6 +131,8 @@ public class ExpenseController {
             String id = expenseView.readLine();
             try {
                 expenseService.deleteExpense(id);
+                expenseView.showMessage("Расход успешно удалён.");
+                return;
             } catch (InputException e) {
                 expenseView.showMessage(e.getMessage() + ". Попробуйте еще раз.");
             }
@@ -139,8 +144,14 @@ public class ExpenseController {
     }
 
     public void showExpenseAmountByCategory() {
-        StringBuilder result = expenseService.sumAmountsByCategory();
-        if (result.isEmpty()) expenseView.showMessage("Отсутствуют расходы по категориям.");
-        else expenseView.showMessage(result.toString());
+        Map<String, BigDecimal> map = expenseService.sumAmountsByCategory();
+        if (map.isEmpty()) expenseView.showMessage("Отсутствуют расходы по категориям.");
+        else {
+            StringBuilder result = new StringBuilder();
+            for (Map.Entry<String, BigDecimal> entry : map.entrySet()) {
+                result.append(entry.getKey() + ": " + entry.getValue() + "\n");
+            }
+            expenseView.showMessage(result.toString());
+        }
     }
 }

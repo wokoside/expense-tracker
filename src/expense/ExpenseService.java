@@ -3,9 +3,11 @@ package expense;
 import reader.InputException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
 
 class ExpenseService {
 
@@ -28,7 +30,7 @@ class ExpenseService {
     }
 
     void addExpense(String amount, String description, String categoryId, String expenseDate) {
-        long validAmount = validateAmount(amount);
+        BigDecimal validAmount = validateAmount(amount);
         int validCategoryId = validateCategory(categoryId);
         LocalDate validExpenseDate = validateExpenseDate(expenseDate);
         expenseDao.create(validAmount, description, validCategoryId, validExpenseDate);
@@ -51,7 +53,7 @@ class ExpenseService {
 
     void updateExpense(String id, String amount, String description, String categoryId, String expenseDate) {
         int intId = validateId(id);
-        long validAmount = validateAmount(amount);
+        BigDecimal validAmount = validateAmount(amount);
         int validCategoryId = validateCategory(categoryId);
         LocalDate validExpenseDate = validateExpenseDate(expenseDate);
         expenseDao.update(intId, validAmount, description, validCategoryId, validExpenseDate);
@@ -66,8 +68,9 @@ class ExpenseService {
         return expenseDao.sumExpensesAmount();
     }
 
-    StringBuilder sumAmountsByCategory() {
-        return expenseDao.sumAmountsByCategory();
+    Map<String,BigDecimal> sumAmountsByCategory() {
+        Map<String, BigDecimal> map = expenseDao.sumAmountsByCategory();
+        return map;
     }
 
     int validateId(String id) {
@@ -82,17 +85,14 @@ class ExpenseService {
         }
     }
 
-    long validateAmount(String amount) {
+    BigDecimal validateAmount(String amount) {
         if (amount == null) throw new InputException("Введена пустая стоимость");
         String trimAmount = amount.trim();
         if (trimAmount.isBlank()) throw new InputException("Введена пустая стоимость");
         String regex = "^\\d{1,10}([.,]\\d{1,2})?$";
         if (trimAmount.matches(regex)) {
             String normalizedAmount = trimAmount.replace(",", ".");
-            return new BigDecimal(normalizedAmount)
-                    .setScale(2, java.math.RoundingMode.HALF_UP)
-                    .multiply(java.math.BigDecimal.valueOf(100))
-                    .longValue();
+            return new BigDecimal(normalizedAmount).setScale(2, RoundingMode.HALF_UP);
         } else throw new InputException("Указан неверный формат стоимости");
     }
 
@@ -102,7 +102,7 @@ class ExpenseService {
         if (trimCategory.isBlank()) throw new InputException("Введен пустой ID категории");
         try {
             int id = Integer.valueOf(trimCategory);
-            if (!expenseDao.isCategoryExists(id)) throw new InputException("Указанная категория не существует");
+            if (!expenseDao.isCategoryExistsById(id)) throw new InputException("Указанная категория не существует");
             return id;
         } catch (NumberFormatException e) {
             throw new InputException("Введена строка вместо числового значения");

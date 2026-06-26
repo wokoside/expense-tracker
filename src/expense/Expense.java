@@ -1,10 +1,11 @@
 package expense;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 class Expense {
     private int id;
-    private long amount;
+    private BigDecimal amount;
     private String description;
     private int categoryId;
     private LocalDate expenseDate;
@@ -13,7 +14,7 @@ class Expense {
         return id;
     }
 
-    public long getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
@@ -29,7 +30,7 @@ class Expense {
         return expenseDate;
     }
 
-    public void setAmount(long amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
@@ -45,7 +46,7 @@ class Expense {
         this.expenseDate = expenseDate;
     }
 
-    public Expense(int id, long amount, String description, int categoryId, LocalDate expenseDate) {
+    public Expense(int id, BigDecimal amount, String description, int categoryId, LocalDate expenseDate) {
         this.id = id;
         this.amount = amount;
         this.description = description;
@@ -53,7 +54,7 @@ class Expense {
         this.expenseDate = expenseDate;
     }
 
-    public Expense(long amount, String description, int categoryId, LocalDate expenseDate) {
+    public Expense(BigDecimal amount, String description, int categoryId, LocalDate expenseDate) {
         this.amount = amount;
         this.description = description;
         this.categoryId = categoryId;

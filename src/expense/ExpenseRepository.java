@@ -1,11 +1,13 @@
 package expense;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 interface ExpenseRepository {
 
-    Expense create(long amount, String description, int categoryId, LocalDate expenseDate);
+    Expense create(BigDecimal amount, String description, int categoryId, LocalDate expenseDate);
 
     List<Expense> findAll();
 
@@ -13,13 +15,13 @@ interface ExpenseRepository {
 
     List<Expense> findByCategoryId(int categoryId);
 
-    void update(int id, long amount, String description, int categoryId, LocalDate expenseDate);
+    void update(int id, BigDecimal amount, String description, int categoryId, LocalDate expenseDate);
 
     void delete(int id);
 
-    long sumExpensesAmount();
+    BigDecimal sumExpensesAmount();
 
-    StringBuilder sumAmountsByCategory();
+    Map<String, BigDecimal> sumAmountsByCategory();
 
-    boolean isCategoryExists(int id);
+    boolean isCategoryExistsById(int id);
 }
