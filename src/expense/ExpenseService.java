@@ -64,7 +64,7 @@ class ExpenseService {
         expenseDao.delete(intId);
     }
 
-    long sumExpenses() {
+    BigDecimal sumExpenses() {
         return expenseDao.sumExpensesAmount();
     }
 
