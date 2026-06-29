@@ -159,8 +159,8 @@ class JdbcExpenseDao implements ExpenseRepository {
     @Override
     public Map<String, BigDecimal> sumAmountsByCategory() {
         String sql = """
-                select categories.name as category, sum(amount) as sum from expenses, categories
-                where expenses.category_id = categories.id
+                select categories.name as category, sum(amount) as sum from expenses
+                join categories on expenses.category_id = categories.id
                 group by categories.name
                 """;
         try (Connection connection = ConnectionFactory.openConnection(); PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery();) {
@@ -175,9 +175,9 @@ class JdbcExpenseDao implements ExpenseRepository {
     }
 
     @Override
-    public boolean isCategoryExistsById(int id) {
+    public boolean isExpenseExistsById(int id) {
         String sql = """
-                select 1 from categories
+                select 1 from expenses
                 where id = ?
                 """;
         try (Connection connection = ConnectionFactory.openConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {

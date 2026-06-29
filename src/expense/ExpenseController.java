@@ -1,16 +1,17 @@
 package expense;
 
-import category.CategoryController;
+import category.CategoryRepository;
 import reader.InputException;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ExpenseController {
 
     private final ExpenseView expenseView = ExpenseView.getInstance();
-    private final ExpenseService expenseService = ExpenseService.getInstance(JdbcExpenseDao.getInstance());
+    private final ExpenseService expenseService = ExpenseService.getInstance(JdbcExpenseDao.getInstance(), CategoryRepository.getInstance());
 
     private static volatile ExpenseController instance;
 
@@ -147,11 +148,10 @@ public class ExpenseController {
         Map<String, BigDecimal> map = expenseService.sumAmountsByCategory();
         if (map.isEmpty()) expenseView.showMessage("Отсутствуют расходы по категориям.");
         else {
-            StringBuilder result = new StringBuilder();
-            for (Map.Entry<String, BigDecimal> entry : map.entrySet()) {
-                result.append(entry.getKey() + ": " + entry.getValue() + "\n");
-            }
-            expenseView.showMessage(result.toString());
+            String result = map.entrySet().stream()
+                    .map(entry -> entry.getKey() + ": " + entry.getValue())
+                    .collect(Collectors.joining("\n"));
+            expenseView.showMessage(result);
         }
     }
 }

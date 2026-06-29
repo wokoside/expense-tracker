@@ -31,9 +31,12 @@ class CategoryService {
         String trimName = name.trim();
         if (trimName.isBlank()) throw new InputException("Введена пустая строка");
         if (trimName.length() > 100) throw new InputException("Превышен лимит символов (>100)");
-        if (categoryDao.existsCategory(trimName)) throw new InputException("Введено неуникальное имя категории");
+        if (categoryDao.isCategoryExistsByName(trimName))
+            throw new InputException("Введено неуникальное имя категории");
         return trimName;
     }
 
-
+    boolean isCategoryExistsById(int id) {
+        return categoryDao.isCategoryExistsById(id);
+    }
 }

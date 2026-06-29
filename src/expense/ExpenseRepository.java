@@ -23,5 +23,5 @@ interface ExpenseRepository {
 
     Map<String, BigDecimal> sumAmountsByCategory();
 
-    boolean isCategoryExistsById(int id);
+    boolean isExpenseExistsById(int id);
 }

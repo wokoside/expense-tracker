@@ -1,5 +1,6 @@
 package expense;
 
+import category.CategoryRepository;
 import reader.InputException;
 
 import java.math.BigDecimal;
@@ -14,15 +15,18 @@ class ExpenseService {
     private static volatile ExpenseService instance;
     private final ExpenseRepository expenseDao;
 
-    private ExpenseService(ExpenseRepository expenseDao) {
+    private final CategoryRepository categoryDao;
+
+    private ExpenseService(ExpenseRepository expenseDao, CategoryRepository categoryRepository) {
         this.expenseDao = expenseDao;
+        this.categoryDao = categoryRepository;
     }
 
-    static ExpenseService getInstance(ExpenseRepository expenseDao) {
+    static ExpenseService getInstance(ExpenseRepository expenseDao, CategoryRepository categoryDao) {
         if (instance == null) {
             synchronized (ExpenseService.class) {
                 if (instance == null) {
-                    instance = new ExpenseService(expenseDao);
+                    instance = new ExpenseService(expenseDao, categoryDao);
                 }
             }
         }
@@ -78,7 +82,9 @@ class ExpenseService {
         String trimId = id.trim();
         if (trimId.isBlank()) throw new InputException("Введен пустой ID");
         try {
-            return Integer.valueOf(trimId);
+            int validId = Integer.valueOf(trimId);
+            if (!expenseDao.isExpenseExistsById(validId)) throw new InputException("Указанный расход не существует");
+            return validId;
         }
         catch (NumberFormatException e) {
             throw new InputException("Введена строка вместо числового значения");
@@ -89,7 +95,7 @@ class ExpenseService {
         if (amount == null) throw new InputException("Введена пустая стоимость");
         String trimAmount = amount.trim();
         if (trimAmount.isBlank()) throw new InputException("Введена пустая стоимость");
-        String regex = "^\\d{1,10}([.,]\\d{1,2})?$";
+        String regex = "^\\d{1,10}([.,]\\d{1,})?$";
         if (trimAmount.matches(regex)) {
             String normalizedAmount = trimAmount.replace(",", ".");
             return new BigDecimal(normalizedAmount).setScale(2, RoundingMode.HALF_UP);
@@ -102,7 +108,7 @@ class ExpenseService {
         if (trimCategory.isBlank()) throw new InputException("Введен пустой ID категории");
         try {
             int id = Integer.valueOf(trimCategory);
-            if (!expenseDao.isCategoryExistsById(id)) throw new InputException("Указанная категория не существует");
+            if (!categoryDao.isCategoryExistsById(id)) throw new InputException("Указанная категория не существует");
             return id;
         } catch (NumberFormatException e) {
             throw new InputException("Введена строка вместо числового значения");
