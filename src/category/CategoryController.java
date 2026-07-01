@@ -37,4 +37,9 @@ public class CategoryController {
         }
     }
 
+    public boolean isCategoryExistsById(int id) {
+        if (!categoryService.isCategoryExistsById(id)) throw new InputException("Указанная категория не существует");
+        return true;
+    }
+
 }

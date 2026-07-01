@@ -1,6 +1,13 @@
 package category;
 
-interface CategoryRepository {
+public interface CategoryRepository {
     Category create(String name);
-    boolean existsCategory(String name);
+
+    boolean isCategoryExistsByName(String name);
+
+    boolean isCategoryExistsById(int id);
+
+    static CategoryRepository getInstance() {
+        return JdbcCategoryDao.getInstance();
+    }
 }

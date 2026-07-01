@@ -46,7 +46,7 @@ class JdbcCategoryDao implements CategoryRepository {
     }
 
     @Override
-    public boolean existsCategory(String name) {
+    public boolean isCategoryExistsByName(String name) {
         String sql = """
                 select 1 from categories
                 where name = ?
@@ -55,6 +55,24 @@ class JdbcCategoryDao implements CategoryRepository {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    @Override
+    public boolean isCategoryExistsById(int id) {
+        String sql = """
+                select 1 from categories
+                where id = ?
+                """;
+        try (Connection connection = ConnectionFactory.openConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            } catch (SQLException e) {
+                throw new DatabaseException(e);
             }
         } catch (SQLException e) {
             throw new DatabaseException(e);
