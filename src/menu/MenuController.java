@@ -11,11 +11,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class MenuController {
-    private CategoryController categoryController = CategoryController.getInstance();
-    private ExpenseController expenseController = ExpenseController.getInstance();
+    private final CategoryController categoryController = CategoryController.getInstance();
+    private final ExpenseController expenseController = ExpenseController.getInstance();
 
-    private MenuView menuView = MenuView.getInstance();
-    private MenuService menuService = MenuService.getInstance();
+    private final MenuView menuView = MenuView.getInstance();
+    private final MenuService menuService = MenuService.getInstance();
 
     private static volatile MenuController instance;
 
